@@ -1,0 +1,130 @@
+@prefix rml:       <http://semweb.mmlab.be/ns/rml#> .
+@prefix rr:        <http://www.w3.org/ns/r2rml#> .
+@prefix ql:        <http://semweb.mmlab.be/ns/ql#> .
+@prefix rdf:       <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rules:     <http://www.wegenenverkeer.be/verkeersmetingen/rules/meting/> .
+ 
+@prefix xsd:       <http://www.w3.org/2001/XMLSchema#> .
+@prefix dcterms:   <http://purl.org/dc/terms/> .
+@prefix prov:      <http://www.w3.org/ns/prov#> .
+@prefix :          <https://wegenenverkeer.be/ns/traffic-data#> .
+@prefix carml:     <http://carml.taxonic.com/carml/> .
+
+rules:VerkeersdataMap a rr:TriplesMap;
+  rml:logicalSource [
+    rml:source [ a carml:Stream ];
+    rml:referenceFormulation ql:XPath;
+    rml:iterator "/miv"
+  ];
+  rr:subjectMap [ rr:termType rr:BlankNode; rr:template "dummy" ].
+
+rules:VerkeersdataMeetdataMap a rr:TriplesMap;
+  rml:logicalSource [
+    rml:source [ a carml:Stream ];
+    rml:referenceFormulation ql:XPath;
+    rml:iterator "/miv/meetpunt/meetdata"
+  ];
+  rr:subjectMap [ 
+    rr:termType rr:BlankNode; 
+    rr:template "{../@unieke_id}K{@klasse_id}" 
+  ];
+  rr:predicateObjectMap 
+  [
+    rr:predicate rdf:type;
+    rr:objectMap [ rr:constant :Measurement; rr:termType rr:IRI ]
+  ], [
+    rr:predicate :klasse_id;
+    rr:objectMap [ rml:reference "@klasse_id"; rr:datatype xsd:int ]
+  ], [
+    rr:predicate :verkeersintensiteit;
+    rr:objectMap [ rml:reference "verkeersintensiteit"; rr:datatype xsd:int ]
+  ], [
+    rr:predicate :voertuigsnelheid_rekenkundig;
+    rr:objectMap [ rml:reference "voertuigsnelheid_rekenkundig"; rr:datatype xsd:int ]
+  ], [
+    rr:predicate :voertuigsnelheid_harmonisch;
+    rr:objectMap [ rml:reference "voertuigsnelheid_harmonisch"; rr:datatype xsd:int ]
+  ] .
+
+rules:VerkeersdataRekendataMap a rr:TriplesMap;
+  rml:logicalSource [
+    rml:source [ a carml:Stream ];
+    rml:referenceFormulation ql:XPath;
+    rml:iterator "/miv/meetpunt/rekendata"
+  ];
+  rr:subjectMap [ 
+    rr:termType rr:BlankNode; 
+    rr:template "{../@unieke_id}" 
+  ];
+  rr:predicateObjectMap 
+  [
+    rr:predicate rdf:type;
+    rr:objectMap [ rr:constant :Calculation; rr:termType rr:IRI ]
+  ], [
+    rr:predicate :bezettingsgraad;
+    rr:objectMap [ rml:reference "bezettingsgraad"; rr:datatype xsd:int ]
+  ], [
+    rr:predicate :beschikbaarheidsgraad;
+    rr:objectMap [ rml:reference "beschikbaarheidsgraad"; rr:datatype xsd:int ]
+  ], [
+    rr:predicate :onrustigheid;
+    rr:objectMap [ rml:reference "onrustigheid"; rr:datatype xsd:int ]
+  ] .
+
+rules:VerkeersdataMeetpuntMap a rr:TriplesMap;
+  rml:logicalSource [
+    rml:source [ a carml:Stream ];
+    rml:referenceFormulation ql:XPath;
+    rml:iterator "/miv/meetpunt";
+  ];
+  rr:subjectMap [ 
+    rr:graphMap [ rr:template "http://www.wegenenverkeer.be/id/traffic-data/observation/{@unieke_id}" ];
+    rr:template "http://www.wegenenverkeer.be/id/traffic-data/observation/{@unieke_id}" 
+  ];
+  rr:predicateObjectMap 
+  [
+    rr:predicate rdf:type;
+    rr:objectMap [ rr:constant :Observation; rr:termType rr:IRI ]
+  ], [
+    rr:predicate :unieke_id;
+    rr:objectMap [ rml:reference "@unieke_id"; rr:datatype xsd:int ]
+  ], [
+    rr:predicate :beschrijvende_id;
+    rr:objectMap [ rml:reference "beschrijvende_id" ]
+  ], [
+    rr:predicate :lve_nr;
+    rr:objectMap [ rml:reference "lve_nr"; rr:datatype xsd:int ]
+  ], [
+    rr:predicate :tijd_waarneming;
+    rr:objectMap [ rml:reference "tijd_waarneming"; rr:datatype xsd:dateTime ]
+  ], [
+    rr:predicate :tijd_laatst_gewijzigd;
+    rr:objectMap [ rml:reference "tijd_laatst_gewijzigd"; rr:datatype xsd:dateTime ]
+  ], [
+    rr:predicate :actueel_publicatie;
+    rr:objectMap [ rml:reference "actueel_publicatie"; rr:datatype xsd:int ]
+  ], [
+    rr:predicate :beschikbaar;
+    rr:objectMap [ rml:reference "beschikbaar"; rr:datatype xsd:int ]
+  ], [
+    rr:predicate :defect;
+    rr:objectMap [ rml:reference "defect"; rr:datatype xsd:int ]
+  ], [
+    rr:predicate :geldig;
+    rr:objectMap [ rml:reference "geldig"; rr:datatype xsd:int ]
+  ], [
+    rr:predicate :meetData;
+    rr:objectMap [ rr:joinCondition [rr:child "@unieke_id"; rr:parent "../@unieke_id"]; rr:parentTriplesMap rules:VerkeersdataMeetdataMap ]
+  ], [
+    rr:predicate :rekenData;
+    rr:objectMap [ rr:joinCondition [rr:child "@unieke_id"; rr:parent "../@unieke_id"]; rr:parentTriplesMap rules:VerkeersdataRekendataMap ]
+  ], [
+    rr:predicate :tijd_publicatie;
+    rr:objectMap [ rml:reference "../tijd_publicatie"; rr:datatype xsd:dateTime ]
+  ], [
+    rr:predicate :tijd_laatste_config_wijziging;
+    rr:objectMap [ rml:reference "../tijd_laatste_config_wijziging"; rr:datatype xsd:dateTime ]
+  ], [
+    rr:predicate prov:generatedAtTime;
+    rr:objectMap [ rml:reference "tijd_waarneming"; rr:datatype xsd:dateTime ]
+  ].

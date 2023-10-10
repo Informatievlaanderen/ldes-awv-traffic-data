@@ -1,0 +1,40 @@
+PREFIX rdf:          <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX dct:          <http://purl.org/dc/terms/>
+PREFIX xsd:          <http://www.w3.org/2001/XMLSchema#>
+PREFIX :             <https://wegenenverkeer.be/ns/traffic-data#>
+
+CONSTRUCT {
+    ?mp a :MeasurementPoint ;
+        :unieke_id ?unieke_id ;
+        :beschrijvende_id ?beschrijvende_id ;
+        :volledige_naam ?volledige_naam ;
+        :Ident_8 ?Ident_8 ;
+        :lve_nr ?lve_nr ;
+        :Rijstrook ?Rijstrook ;
+        dct:modified ?modified ;
+        :Kmp_Rsys ?Kmp_Rsys_fixed ;
+        :X_coord_EPSG_31370 ?X_coord_EPSG_31370_fixed ;
+        :Y_coord_EPSG_31370 ?Y_coord_EPSG_31370_fixed ;
+        :lengtegraad_EPSG_4326 ?lengtegraad_EPSG_4326_fixed ;
+        :breedtegraad_EPSG_4326 ?breedtegraad_EPSG_4326_fixed .
+}
+WHERE {
+    ?mp rdf:type :MeasurementPoint .
+    ?mp :unieke_id ?unieke_id .
+    ?mp :beschrijvende_id ?beschrijvende_id .
+    ?mp :volledige_naam ?volledige_naam .
+    ?mp :Ident_8 ?Ident_8 .
+    ?mp :lve_nr ?lve_nr .
+    ?mp :Rijstrook ?Rijstrook .
+    ?mp dct:modified ?modified .
+    optional {?mp :Kmp_Rsys ?Kmp_Rsys }
+    ?mp :X_coord_EPSG_31370 ?X_coord_EPSG_31370 .
+    ?mp :Y_coord_EPSG_31370 ?Y_coord_EPSG_31370 .
+    ?mp :lengtegraad_EPSG_4326 ?lengtegraad_EPSG_4326 .
+    ?mp :breedtegraad_EPSG_4326 ?breedtegraad_EPSG_4326 .
+    bind(strdt(if(!bound(?Kmp_Rsys) || ?Kmp_Rsys = "NULL" || ?Kmp_Rsys = "", "0", replace(?Kmp_Rsys, ",", ".")), xsd:double) as ?Kmp_Rsys_fixed) .
+    bind(replace(?X_coord_EPSG_31370, "," , ".") as ?X_coord_EPSG_31370_fixed) .
+    bind(replace(?Y_coord_EPSG_31370, "," , ".") as ?Y_coord_EPSG_31370_fixed) .
+    bind(replace(?lengtegraad_EPSG_4326, "," , ".") as ?lengtegraad_EPSG_4326_fixed) .
+    bind(replace(?breedtegraad_EPSG_4326, "," , ".") as ?breedtegraad_EPSG_4326_fixed) .
+}

@@ -1,0 +1,15 @@
+@prefix tree: 	<https://w3id.org/tree#>.
+@prefix xsd:    <http://www.w3.org/2001/XMLSchema#> .
+@prefix gsp:    <http://www.opengis.net/ont/geosparql#> .
+
+</measurement-points/by-location> a tree:Node ; 
+  tree:viewDescription [ 
+		a tree:ViewDescription ;
+    tree:fragmentationStrategy (
+		[
+			a tree:GeospatialFragmentation ;
+			tree:maxZoom "13"^^xsd:integer ;
+			tree:fragmentationPath gsp:asWKT 
+		]) ; 
+		tree:pageSize "10"^^xsd:integer 
+] .

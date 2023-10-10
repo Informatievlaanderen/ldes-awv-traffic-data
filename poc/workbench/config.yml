@@ -1,0 +1,61 @@
+server:
+  port: 8080
+orchestrator:
+  pipelines:
+
+    - name: measurement-points-pipeline
+      description: "HTTP poller for measurement points, version creation, HTTP out to LDES Server."
+      input:
+        name: be.vlaanderen.informatievlaanderen.ldes.ldio.LdioHttpInPoller
+        config:
+          url: http://miv.opendata.belfla.be/miv/configuratie/xml
+          interval: P1D
+        adapter:
+          name: be.vlaanderen.informatievlaanderen.ldes.ldi.RmlAdapter
+          config:
+            mapping: ./rml/measurement-points.ttl
+      transformers:
+        - name: be.vlaanderen.informatievlaanderen.ldes.ldi.SparqlConstructTransformer
+          config:
+            query: ./sparql/measurement-points.fix-decimal-points.rq
+        - name: be.vlaanderen.informatievlaanderen.ldes.ldi.SparqlConstructTransformer
+          config:
+            query: ./sparql/measurement-points.add-location.rq
+            infer: true
+        - name: be.vlaanderen.informatievlaanderen.ldes.ldi.VersionObjectCreator
+          config:
+            member-type: https://wegenenverkeer.be/ns/traffic-data#MeasurementPoint
+            delimiter: "/"
+            date-observed-property: http://purl.org/dc/terms/modified
+            generatedAt-property: http://purl.org/dc/terms/modified
+            versionOf-property: http://purl.org/dc/terms/isVersionOf
+      outputs:
+        - name: be.vlaanderen.informatievlaanderen.ldes.ldio.LdioHttpOut
+          config:
+            endpoint: http://ldes-server:8080/measurement-points
+            content-type: application/n-quads
+
+    - name: observations-pipeline
+      description: "HTTP poller for observations, version creation, HTTP out to LDES Server."
+      input:
+        name: be.vlaanderen.informatievlaanderen.ldes.ldio.LdioHttpInPoller
+        config:
+          url: http://miv.opendata.belfla.be/miv/verkeersdata
+          interval: PT1M
+        adapter:
+          name: be.vlaanderen.informatievlaanderen.ldes.ldi.RmlAdapter
+          config:
+            mapping: ./rml/observations.ttl
+      transformers:
+        - name: be.vlaanderen.informatievlaanderen.ldes.ldi.VersionObjectCreator
+          config:
+            member-type: https://wegenenverkeer.be/ns/traffic-data#Observation
+            delimiter: "/"
+            date-observed-property: http://www.w3.org/ns/prov#generatedAtTime
+            generatedAt-property: http://www.w3.org/ns/prov#generatedAtTime
+            versionOf-property: http://purl.org/dc/terms/isVersionOf
+      outputs:
+        - name: be.vlaanderen.informatievlaanderen.ldes.ldio.LdioHttpOut
+          config:
+            endpoint: http://ldes-server:8080/observations
+            content-type: application/n-quads

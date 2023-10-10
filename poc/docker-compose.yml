@@ -1,0 +1,43 @@
+version: '3.3'
+services:
+
+  ldes-mongodb:
+    container_name: ${USECASE_NAME:-awv-traffic-data}_ldes-mongodb
+    image: mongo:${MONGODB_TAG:-latest}
+    ports:
+      - ${MONGODB_PORT:-27017}:27017
+    networks:
+      - ldes
+
+  ldio-workbench:
+    container_name: ${USECASE_NAME:-awv-traffic-data}_ldio-workbench
+    image: ldes/ldi-orchestrator:${LDI_ORCHESTRATOR_TAG:-1.6.0-SNAPSHOT} # TODO: use 1.7.0-SNAPSHOT
+    volumes:
+      - ./workbench/config.yml:/ldio/application.yml:ro
+      - ./workbench/rml:/ldio/rml:ro
+      - ./workbench/sparql:/ldio/sparql:ro
+    ports:
+      - ${LDIO_WORKBENCH_PORT:-8081}:8080
+    networks:
+      - ldes 
+    profiles:
+      - delay-started
+  
+  ldes-server:
+    container_name: ${USECASE_NAME:-awv-traffic-data}_ldes-server
+    image: ldes/ldes-server:${LDES_SERVER_TAG:-2.0.1-SNAPSHOT} # TODO: use 2.0.3-SNAPSHOT
+    environment:
+      - SIS_DATA=/tmp
+    volumes:
+      - ./server/config.yml:/application.yml:ro
+      - ./server/tmp/epsg:/tmp/Databases:rw
+    ports:
+      - ${LDES_SERVER_PORT:-8080}:8080
+    networks:
+      - ldes
+    depends_on:
+      - ldes-mongodb
+
+networks:
+  ldes:
+    name: ${USECASE_NAME:-awv-traffic-data}_network
